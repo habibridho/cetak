@@ -1,32 +1,46 @@
 package cetak
 
 import (
+	"fmt"
+	"os"
 	"testing"
-	"text/template"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 type TestData struct {
-	TestContent string
+	Title   string
+	Content string
 }
 
 func TestGenerate(t *testing.T) {
-	mockTemplate, err := template.New("template").Parse("Hello {{.TestContent}}")
+	d, err := New("sample_templates/simple-template.docx")
 	if err != nil {
-		t.Fatalf("could not parse mock tempalte")
+		t.Fatalf("could not create docx object: %s", err.Error())
 	}
-	d := &docx{
-		tpl: mockTemplate,
-	}
+
 	data := TestData{
-		TestContent: "World!",
+		Title:   "Some Title",
+		Content: "Some Content",
 	}
 
-	err = d.Generate(data)
+	id, err := uuid.NewRandom()
+	if err != nil {
+		t.Fatalf("could not generate uuid: %s", err.Error())
+	}
+	destination := fmt.Sprintf("%s.docx", id.String())
+	err = d.Generate(data, destination)
 	assert.NoError(t, err)
+	defer os.Remove(destination)
 
-	expected := "Hello World!"
-	actual := d.buffer.String()
+	expected, err := getDocxContentAsString("test_resources/simple-result.docx")
+	if err != nil {
+		t.Fatalf("could not read test resource file: %s", err.Error())
+	}
+	actual, err := getDocxContentAsString(destination)
+	if err != nil {
+		t.Fatalf("could not read test resource file: %s", err.Error())
+	}
 	assert.Equal(t, expected, actual)
 }
