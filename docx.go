@@ -3,6 +3,7 @@ package cetak
 import (
 	"archive/zip"
 	"bytes"
+	"errors"
 	"io"
 	"text/template"
 )
@@ -26,23 +27,12 @@ func New(templatePath string) (Docx, error) {
 	}
 	defer reader.Close()
 
-	var tplBuffer bytes.Buffer
-	for _, f := range reader.File {
-		if f.Name == "word/document.xml" {
-			contentReader, err := f.Open()
-			if err != nil {
-				return nil, err
-			}
-			defer contentReader.Close()
-
-			_, err = io.Copy(&tplBuffer, contentReader)
-			if err != nil {
-				return nil, err
-			}
-		}
+	tplString, err := getTemplateString(reader.File)
+	if err != nil {
+		return nil, err
 	}
 
-	tpl, err := template.New("template").Parse(tplBuffer.String())
+	tpl, err := template.New("template").Parse(tplString)
 	if err != nil {
 		return nil, err
 	}
@@ -55,4 +45,26 @@ func New(templatePath string) (Docx, error) {
 func (d *docx) Generate(data interface{}) error {
 	err := d.tpl.Execute(&d.buffer, data)
 	return err
+}
+
+func getTemplateString(files []*zip.File) (string, error) {
+	var tplBuffer bytes.Buffer
+	for _, f := range files {
+		if f.Name == "word/document.xml" {
+			contentReader, err := f.Open()
+			if err != nil {
+				return "", err
+			}
+			defer contentReader.Close()
+
+			_, err = io.Copy(&tplBuffer, contentReader)
+			if err != nil {
+				return "", err
+			}
+
+			return tplBuffer.String(), nil
+		}
+	}
+
+	return "", errors.New("docx content not found")
 }
