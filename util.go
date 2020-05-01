@@ -3,34 +3,57 @@ package cetak
 import (
 	"archive/zip"
 	"bytes"
-	"errors"
 	"io"
 )
 
-func getDocxContentAsString(templatePath string) (string, error) {
-	reader, err := zip.OpenReader(templatePath)
+type actions map[string]func(f *zip.File) error
+
+func executeOnDocx(path string, acts actions, defaultAct func(f *zip.File) error) error {
+	reader, err := zip.OpenReader(path)
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer reader.Close()
 
-	var tplBuffer bytes.Buffer
 	for _, f := range reader.File {
-		if f.Name == "word/document.xml" {
+		if act, ok := acts[f.Name]; ok {
+			if err := act(f); err != nil {
+				return err
+			}
+		} else if defaultAct != nil {
+			if err := defaultAct(f); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func getDocxContentAsString(path string) (string, error) {
+	var tplBuffer bytes.Buffer
+	var content string
+	acts := actions{
+		"word/document.xml": func(f *zip.File) error {
 			contentReader, err := f.Open()
 			if err != nil {
-				return "", err
+				return err
 			}
 			defer contentReader.Close()
 
 			_, err = io.Copy(&tplBuffer, contentReader)
 			if err != nil {
-				return "", err
+				return err
 			}
 
-			return tplBuffer.String(), nil
-		}
+			content = tplBuffer.String()
+			return nil
+		},
+	}
+	err := executeOnDocx(path, acts, nil)
+	if err != nil {
+		return "", err
 	}
 
-	return "", errors.New("docx content not found")
+	return content, nil
 }

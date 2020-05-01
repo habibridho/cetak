@@ -49,33 +49,37 @@ func (d *docx) Generate(data interface{}, destination string) error {
 	if err != nil {
 		return err
 	}
-
-	docxReader, err := zip.OpenReader(d.templatePath)
-	if err != nil {
-		return err
-	}
-	defer docxReader.Close()
-
 	docxWriter := zip.NewWriter(destFile)
-	for _, tplFile := range docxReader.File {
-		f, err := docxWriter.Create(tplFile.Name)
-		if err != nil {
-			return err
-		}
 
-		if tplFile.Name == "word/document.xml" {
-			if _, err = f.Write([]byte(resultBuf.String())); err != nil {
-				return err
-			}
-		} else {
-			tplFileReader, err := tplFile.Open()
+	acts := actions{
+		"word/document.xml": func(f *zip.File) error {
+			docFile, err := docxWriter.Create(f.Name)
 			if err != nil {
 				return err
 			}
-			if _, err = io.Copy(f, tplFileReader); err != nil {
+			if _, err = docFile.Write([]byte(resultBuf.String())); err != nil {
 				return err
 			}
+			return nil
+		},
+	}
+	defaultAct := func(f *zip.File) error {
+		docFile, err := docxWriter.Create(f.Name)
+		if err != nil {
+			return err
 		}
+		tplFileReader, err := f.Open()
+		if err != nil {
+			return err
+		}
+		if _, err = io.Copy(docFile, tplFileReader); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if err := executeOnDocx(d.templatePath, acts, defaultAct); err != nil {
+		return err
 	}
 	return docxWriter.Close()
 }
