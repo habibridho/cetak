@@ -1,6 +1,7 @@
 # Cetak
 [![GoDoc](https://godoc.org/github.com/habibridho/cetak?status.svg)](https://godoc.org/github.com/habibridho/cetak)
 [![Build Status](https://travis-ci.org/habibridho/cetak.svg?branch=master)](https://travis-ci.org/habibridho/cetak)
+[![Coverage Status](https://coveralls.io/repos/github/habibridho/cetak/badge.svg?branch=configure-travis-and-coverall)](https://coveralls.io/github/habibridho/cetak?branch=configure-travis-and-coverall)
 
 Golang package that helps you generate Word document (.docx) from a template. It utilises go's `text/template` package behind the scene so you can use the same annotation in your template.
 
