@@ -27,3 +27,6 @@ if err != nil {
 ...
 ```
 In the above sample, we assume to have a template ready in `/path/to/template.docx`. We will inject `data` which has an arbitrary `TemplateData` type. Note that the `data` type can be anything where the fields correspond to annotations inside the template. In this sample, `template.docx` has `{{.Title}}` and `{{.Content}}` inside of it. The result will be stored in the given result path, ie `/path/to/result.docx`.
+
+## License
+This package is licensed under [MIT License](LICENSE).
