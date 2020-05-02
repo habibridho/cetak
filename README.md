@@ -1,4 +1,6 @@
 # Cetak
+[![GoDoc](https://godoc.org/github.com/habibridho/cetak?status.svg)](https://godoc.org/github.com/habibridho/cetak)
+
 Golang package that helps you generate Word document (.docx) from a template. It utilises go's `text/template` package behind the scene so you can use the same annotation in your template.
 
 ## Usage

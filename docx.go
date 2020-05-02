@@ -1,3 +1,4 @@
+// Package cetak helps you generate Word document (.docx) from a template.
 package cetak
 
 import (
@@ -9,9 +10,11 @@ import (
 )
 
 // Docx is the interface used to interact with cetak's doc generator
+//
+// Generate generates the document using given data.
+// Generate receive data which can be any type that is accepted by text/template package.
+// Generate also receive destination path which is the intended path to write the result.
 type Docx interface {
-	// Generate the document using given data.
-	// The result will be written to the given destination path.
 	Generate(data interface{}, destination string) error
 }
 
@@ -38,6 +41,7 @@ func New(templatePath string) (Docx, error) {
 	}, nil
 }
 
+// Generate generates the document content based on the template set in d object
 func (d *docx) Generate(data interface{}, destination string) error {
 	var resultBuf bytes.Buffer
 	err := d.tpl.Execute(&resultBuf, data)
