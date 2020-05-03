@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"testing"
+	"text/template"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -73,4 +74,30 @@ func TestGenerate(t *testing.T) {
 		}
 		assert.Equal(t, expected, actual)
 	}
+}
+
+func TestTemplate(t *testing.T) {
+	tpl := template.New("")
+	d := docx{
+		tpl: tpl,
+	}
+
+	result := d.Template()
+	assert.Equal(t, tpl, result)
+}
+
+func TestSetTemplate(t *testing.T) {
+	tpl := template.New("")
+	d := docx{
+		tpl: tpl,
+	}
+
+	newTpl, err := tpl.Clone()
+	if err != nil {
+		t.Fatalf("could not clone template: %s", err.Error())
+	}
+
+	d.SetTemplate(newTpl)
+	result := d.Template()
+	assert.Equal(t, newTpl, result)
 }

@@ -14,8 +14,12 @@ import (
 // Generate generates the document using given data.
 // Generate receive data which can be any type that is accepted by text/template package.
 // Generate also receive destination path which is the intended path to write the result.
+// You can also get the generated template and modify it accordingly using
+// the provided getter and setter (Template and SetTemplate)
 type Docx interface {
 	Generate(data interface{}, destination string) error
+	Template() *template.Template
+	SetTemplate(tpl *template.Template)
 }
 
 type docx struct {
@@ -86,4 +90,12 @@ func (d *docx) Generate(data interface{}, destination string) error {
 		return err
 	}
 	return docxWriter.Close()
+}
+
+func (d *docx) Template() *template.Template {
+	return d.tpl
+}
+
+func (d *docx) SetTemplate(tpl *template.Template) {
+	d.tpl = tpl
 }
